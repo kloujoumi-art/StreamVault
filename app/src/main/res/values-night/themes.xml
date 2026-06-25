@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.StreamVault" parent="android:Theme.Material.NoActionBar">
-        <item name="android:statusBarColor">@color/stream_vault_black</item>
-        <item name="android:navigationBarColor">@color/stream_vault_black</item>
-        <item name="android:windowBackground">@color/stream_vault_black</item>
+    <style name="Theme.Atilfaz" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@color/atilfaz_background</item>
+        <item name="android:navigationBarColor">@color/atilfaz_background</item>
+        <item name="android:windowBackground">@color/atilfaz_background</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
+
+    <style name="Theme.StreamVault" parent="Theme.Atilfaz" />
 </resources>

@@ -2,13 +2,36 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="stream_vault_black">#FF0A0A0F</color>
-    <color name="stream_vault_dark_surface">#FF12141A</color>
-    <color name="stream_vault_card_dark">#FF1E2029</color>
-    <color name="stream_vault_cyan">#FF00D4FF</color>
-    <color name="stream_vault_purple">#FF8B5CF6</color>
-    <color name="stream_vault_gold">#FFFFCC00</color>
-    <color name="primary">#FF0060D1</color>
-    <color name="primary_dark">#FF00306B</color>
-    <color name="live_badge">#FFFF3B30</color>
+
+    <!-- ATILFAZ brand colors - IPTV Smarters Pro style -->
+    <color name="stream_vault_black">#FF000000</color>
+    <color name="atilfaz_background">#FF000000</color>
+    <color name="atilfaz_surface">#FF0D0D0D</color>
+    <color name="atilfaz_card">#FF141414</color>
+    <color name="atilfaz_card_alt">#FF1C1C1C</color>
+
+    <!-- Primary blue -->
+    <color name="atilfaz_blue">#FF1565C0</color>
+    <color name="atilfaz_blue_light">#FF1E88E5</color>
+    <color name="atilfaz_blue_dark">#FF0D47A1</color>
+    <color name="atilfaz_blue_accent">#FF42A5F5</color>
+
+    <!-- Status -->
+    <color name="atilfaz_live_red">#FFF44336</color>
+    <color name="atilfaz_gold">#FFFFC107</color>
+    <color name="atilfaz_green">#FF4CAF50</color>
+
+    <!-- Borders -->
+    <color name="atilfaz_divider">#FF1F1F1F</color>
+    <color name="atilfaz_border">#FF2A2A2A</color>
+
+    <!-- Legacy aliases for theme compat -->
+    <color name="stream_vault_dark_surface">#FF0D0D0D</color>
+    <color name="stream_vault_card_dark">#FF141414</color>
+    <color name="stream_vault_cyan">#FF1E88E5</color>
+    <color name="stream_vault_purple">#FF1565C0</color>
+    <color name="stream_vault_gold">#FFFFC107</color>
+    <color name="primary">#FF1565C0</color>
+    <color name="primary_dark">#FF0D47A1</color>
+    <color name="live_badge">#FFF44336</color>
 </resources>

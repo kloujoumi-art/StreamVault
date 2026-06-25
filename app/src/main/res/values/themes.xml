@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.StreamVault" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/stream_vault_black</item>
-        <item name="android:navigationBarColor">@color/stream_vault_black</item>
-        <item name="android:windowBackground">@color/stream_vault_black</item>
+    <style name="Theme.Atilfaz" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/atilfaz_background</item>
+        <item name="android:navigationBarColor">@color/atilfaz_background</item>
+        <item name="android:windowBackground">@color/atilfaz_background</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
-    <style name="Theme.StreamVault.SplashScreen" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/stream_vault_black</item>
+    <style name="Theme.Atilfaz.SplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/atilfaz_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
-        <item name="postSplashScreenTheme">@style/Theme.StreamVault</item>
+        <item name="postSplashScreenTheme">@style/Theme.Atilfaz</item>
     </style>
+
+    <!-- Keep old name for any remaining references -->
+    <style name="Theme.StreamVault" parent="Theme.Atilfaz" />
 </resources>

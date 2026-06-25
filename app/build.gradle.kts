@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.streamvault.app"
+    namespace = "com.atilfaz.app"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.streamvault.app"
+        applicationId = "com.atilfaz.app"
         minSdk = 21
         targetSdk = 34
         versionCode = 1
