@@ -67,6 +67,10 @@ class UserPreferences @Inject constructor(
         .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[Keys.VIDEO_QUALITY] ?: "auto" }
 
+    suspend fun saveServerUrl(url: String) {
+        dataStore.edit { prefs -> prefs[Keys.SERVER_URL] = url }
+    }
+
     suspend fun saveCredentials(serverUrl: String, username: String, password: String) {
         dataStore.edit { prefs ->
             prefs[Keys.SERVER_URL] = serverUrl

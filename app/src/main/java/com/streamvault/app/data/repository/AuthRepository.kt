@@ -19,6 +19,8 @@ class AuthRepository @Inject constructor(
         username: String,
         password: String
     ): ApiResult<AuthResponse> {
+        // Save server URL BEFORE the API call so the OkHttp interceptor can read it
+        userPreferences.saveServerUrl(serverUrl)
         return safeApiCall {
             val response = apiService.authenticate(username, password)
             if (!response.isSuccessful) {
