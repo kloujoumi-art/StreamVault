@@ -29,8 +29,8 @@ import kotlinx.coroutines.launch
 fun LiveTvScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToPlayer: (String, String, String, Int) -> Unit,
-    onNavigateToEpg: (Int) -> Unit,
-    onNavigateToSearch: () -> Unit,
+    onNavigateToEpg: (Int) -> Unit = {},
+    onNavigateToSearch: () -> Unit = {},
     viewModel: LiveTvViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()

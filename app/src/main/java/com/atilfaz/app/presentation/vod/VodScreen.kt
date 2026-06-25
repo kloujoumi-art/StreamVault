@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 fun VodScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToPlayer: (String, String, String, Int) -> Unit,
-    onNavigateToSearch: () -> Unit,
+    onNavigateToSearch: () -> Unit = {},
     viewModel: VodViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()

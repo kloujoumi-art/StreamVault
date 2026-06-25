@@ -107,7 +107,6 @@ fun MainScreen(
             }
             composable(BottomTab.Series.route) {
                 SeriesScreen(
-                    onNavigateToPlayer = onNavigateToPlayer,
                     onNavigateToSeriesDetail = {}
                 )
             }
