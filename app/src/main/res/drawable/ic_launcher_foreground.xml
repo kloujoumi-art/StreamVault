@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Background rounded square -->
+    <path
+        android:fillColor="#FF0060D1"
+        android:pathData="M20,20 L88,20 Q94,20 94,26 L94,82 Q94,88 88,88 L20,88 Q14,88 14,82 L14,26 Q14,20 20,20 Z"/>
+
+    <!-- Play button triangle -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M40,34 L80,54 L40,74 Z"/>
+
+    <!-- Accent bar bottom -->
+    <path
+        android:fillColor="#FF00D4FF"
+        android:pathData="M14,78 L94,78 L94,88 Q94,88 88,88 L20,88 Q14,88 14,82 Z"/>
+</vector>

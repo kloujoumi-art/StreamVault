@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="stream_vault_black">#FF0A0A0F</color>
+    <color name="stream_vault_dark_surface">#FF12141A</color>
+    <color name="stream_vault_card_dark">#FF1E2029</color>
+    <color name="stream_vault_cyan">#FF00D4FF</color>
+    <color name="stream_vault_purple">#FF8B5CF6</color>
+    <color name="stream_vault_gold">#FFFFCC00</color>
+    <color name="primary">#FF0060D1</color>
+    <color name="primary_dark">#FF00306B</color>
+    <color name="live_badge">#FFFF3B30</color>
+</resources>

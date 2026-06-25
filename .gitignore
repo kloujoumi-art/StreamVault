@@ -1,0 +1,50 @@
+# Android
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.aab
+*.ap_
+
+# Gradle
+.gradle/
+build/
+
+# Android Studio generated files and folders
+bin/
+gen/
+out/
+.navigation/
+*.class
+
+# Signing keystore — NEVER commit
+*.jks
+*.keystore
+keystore.properties
+
+# Kotlin
+*.kotlin_module
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IntelliJ IDEA
+*.iws
+.idea/
+
+# External native build
+.externalNativeBuild/
+.cxx/
+cmake-build-*/
