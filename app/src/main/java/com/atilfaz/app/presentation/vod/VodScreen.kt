@@ -1,10 +1,10 @@
 ﻿package com.atilfaz.app.presentation.vod
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -16,8 +16,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
@@ -35,109 +37,117 @@ fun VodScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
-    var showSortMenu by remember { mutableStateOf(false) }
+    var showSort by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Movies", color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, null, tint = Color.White)
+    BoxWithConstraints(modifier = Modifier.fillMaxSize().background(AtilfazBackground)) {
+        val isWide = maxWidth > 600.dp
+        val columns = when {
+            maxWidth > 900.dp -> 5
+            maxWidth > 600.dp -> 4
+            maxWidth > 400.dp -> 3
+            else -> 2
+        }
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            // ── Header ───────────────────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth().background(Color(0xFF0A0A0A))
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Movie, null, tint = AtilfazBlueLight, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("MOVIES", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+                    if (!state.isLoading) {
+                        Spacer(Modifier.width(8.dp))
+                        Text("(${state.filteredStreams.size})", fontSize = 12.sp, color = AtilfazTextHint)
                     }
-                },
-                actions = {
-                    IconButton(onClick = { showSortMenu = true }) {
-                        Icon(Icons.Default.Sort, null, tint = Color.White)
+                }
+                Box {
+                    IconButton(onClick = { showSort = true }, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Default.Sort, null, tint = AtilfazTextSecond, modifier = Modifier.size(20.dp))
                     }
                     DropdownMenu(
-                        expanded = showSortMenu,
-                        onDismissRequest = { showSortMenu = false }
+                        expanded = showSort,
+                        onDismissRequest = { showSort = false },
+                        modifier = Modifier.background(AtilfazCardAlt)
                     ) {
-                        VodSortOption.entries.forEach { option ->
+                        VodSortOption.entries.forEach { opt ->
                             DropdownMenuItem(
-                                text = { Text(option.label) },
-                                onClick = {
-                                    viewModel.setSortOption(option)
-                                    showSortMenu = false
-                                },
+                                text = { Text(opt.label, color = if (state.sortBy == opt) AtilfazBlueLight else Color.White, fontSize = 14.sp) },
+                                onClick = { viewModel.setSortOption(opt); showSort = false },
                                 leadingIcon = {
-                                    if (state.sortBy == option) {
-                                        Icon(Icons.Default.Check, null, tint = AtilfazAccentCyan)
-                                    }
+                                    if (state.sortBy == opt) Icon(Icons.Default.Check, null, tint = AtilfazBlueLight, modifier = Modifier.size(16.dp))
                                 }
                             )
                         }
                     }
-                    IconButton(onClick = onNavigateToSearch) {
-                        Icon(Icons.Default.Search, null, tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AtilfazBlack)
-            )
-        },
-        containerColor = AtilfazBlack
-    ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+                }
+            }
+
+            // ── Search ───────────────────────────────────────────────────
             OutlinedTextField(
                 value = state.searchQuery,
                 onValueChange = viewModel::onSearchQueryChange,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("Search movies...") },
-                leadingIcon = { Icon(Icons.Default.Search, null) },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                placeholder = { Text("Search movies...", fontSize = 14.sp, color = AtilfazTextHint) },
+                leadingIcon = { Icon(Icons.Default.Search, null, tint = AtilfazTextHint, modifier = Modifier.size(20.dp)) },
+                trailingIcon = {
+                    if (state.searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                            Icon(Icons.Default.Clear, null, tint = AtilfazTextHint, modifier = Modifier.size(18.dp))
+                        }
+                    }
+                },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(10.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = AtilfazAccentCyan,
-                    unfocusedContainerColor = AtilfazCardDark,
-                    focusedContainerColor = AtilfazCardDark
+                    focusedBorderColor = AtilfazBlueLight, unfocusedBorderColor = AtilfazBorder,
+                    focusedTextColor = Color.White, unfocusedTextColor = AtilfazTextSecond,
+                    cursorColor = AtilfazBlueLight, focusedContainerColor = AtilfazCard, unfocusedContainerColor = AtilfazCard
                 )
             )
 
+            // ── Categories ───────────────────────────────────────────────
             if (state.categories.isNotEmpty()) {
                 LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    modifier = Modifier.padding(bottom = 10.dp)
                 ) {
-                    item {
-                        FilterChip(
-                            selected = state.selectedCategoryId == "all",
-                            onClick = { viewModel.selectCategory("all") },
-                            label = { Text("All") },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = AtilfazAccentCyan,
-                                selectedLabelColor = Color.Black
-                            )
-                        )
-                    }
-                    items(state.categories) { category ->
-                        FilterChip(
-                            selected = state.selectedCategoryId == category.categoryId,
-                            onClick = { viewModel.selectCategory(category.categoryId) },
-                            label = { Text(category.categoryName) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = AtilfazAccentCyan,
-                                selectedLabelColor = Color.Black
-                            )
-                        )
+                    item { ContentCategoryChip("All", state.selectedCategoryId == "all") { viewModel.selectCategory("all") } }
+                    items(state.categories) { cat ->
+                        ContentCategoryChip(cat.categoryName, state.selectedCategoryId == cat.categoryId) {
+                            viewModel.selectCategory(cat.categoryId)
+                        }
                     }
                 }
             }
 
+            // ── Grid ─────────────────────────────────────────────────────
             if (state.isLoading) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = AtilfazAccentCyan)
+                    CircularProgressIndicator(color = AtilfazBlueLight, modifier = Modifier.size(40.dp))
+                }
+            } else if (state.filteredStreams.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Default.MovieFilter, null, tint = AtilfazTextHint, modifier = Modifier.size(56.dp))
+                        Spacer(Modifier.height(12.dp))
+                        Text("No movies found", color = AtilfazTextHint, fontSize = 15.sp)
+                    }
                 }
             } else {
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 130.dp),
-                    contentPadding = PaddingValues(16.dp),
+                    columns = GridCells.Fixed(columns),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(state.filteredStreams) { stream ->
-                        VodGridItem(
+                        MovieCard(
                             title = stream.name,
                             posterUrl = stream.streamIcon,
                             rating = stream.rating5Based,
@@ -149,6 +159,7 @@ fun VodScreen(
                             }
                         )
                     }
+                    item(span = { GridItemSpan(columns) }) { Spacer(Modifier.height(16.dp)) }
                 }
             }
         }
@@ -156,16 +167,27 @@ fun VodScreen(
 }
 
 @Composable
-private fun VodGridItem(
-    title: String,
-    posterUrl: String,
-    rating: Double,
-    onClick: () -> Unit
-) {
+fun ContentCategoryChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    val bg = if (selected) AtilfazBlue else AtilfazCard
+    val textColor = if (selected) Color.White else AtilfazTextSecond
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(bg)
+            .clickable { onClick() }
+            .padding(horizontal = 14.dp, vertical = 7.dp)
+    ) {
+        Text(label, fontSize = 13.sp, color = textColor, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
+    }
+}
+
+@Composable
+fun MovieCard(title: String, posterUrl: String, rating: Double, onClick: () -> Unit) {
     Card(
         onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = AtilfazCardDark)
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = AtilfazCard),
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column {
             Box(modifier = Modifier.fillMaxWidth().aspectRatio(2f / 3f)) {
@@ -175,44 +197,45 @@ private fun VodGridItem(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
+                // Gradient overlay
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color.Black.copy(0.8f)),
-                                startY = 100f
-                            )
+                    modifier = Modifier.fillMaxSize().background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color.Black.copy(0.85f)),
+                            startY = 150f
                         )
+                    )
                 )
+                // Play icon
+                Icon(
+                    Icons.Default.PlayCircleFilled,
+                    null,
+                    tint = Color.White.copy(0.75f),
+                    modifier = Modifier.size(34.dp).align(Alignment.Center)
+                )
+                // Rating badge
                 if (rating > 0) {
                     Row(
-                        modifier = Modifier.align(Alignment.BottomStart).padding(6.dp),
+                        modifier = Modifier.align(Alignment.TopEnd).padding(6.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color.Black.copy(0.6f))
+                            .padding(horizontal = 5.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
-                        Icon(Icons.Default.Star, null, tint = AtilfazGold, modifier = Modifier.size(12.dp))
-                        Text(
-                            String.format("%.1f", rating),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.White
-                        )
+                        Icon(Icons.Default.Star, null, tint = AtilfazGold, modifier = Modifier.size(10.dp))
+                        Text(String.format("%.1f", rating), fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
-                Icon(
-                    Icons.Default.PlayCircle,
-                    null,
-                    tint = Color.White.copy(0.7f),
-                    modifier = Modifier.size(32.dp).align(Alignment.Center)
-                )
             }
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodySmall,
+                fontSize = 12.sp,
                 color = Color.White,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                lineHeight = 16.sp
             )
         }
     }
