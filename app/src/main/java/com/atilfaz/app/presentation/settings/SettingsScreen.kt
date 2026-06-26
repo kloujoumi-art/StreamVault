@@ -66,6 +66,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .padding(bottom = 92.dp)
         ) {
             // ── Account Card ──────────────────────────────────────────────
             Box(

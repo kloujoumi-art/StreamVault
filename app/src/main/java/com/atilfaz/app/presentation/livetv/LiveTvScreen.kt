@@ -254,7 +254,7 @@ private fun ChannelList(
         }
         return
     }
-    LazyColumn(contentPadding = PaddingValues(bottom = 16.dp)) {
+    LazyColumn(contentPadding = PaddingValues(bottom = 92.dp)) {
         itemsIndexed(streams) { index, stream ->
             ChannelItem(
                 index = index + 1,
