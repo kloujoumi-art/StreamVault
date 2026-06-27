@@ -39,9 +39,10 @@ jobs:
       - name: Download Gradle Wrapper JAR
         run: |
           mkdir -p gradle/wrapper
-          curl -L -o gradle/wrapper/gradle-wrapper.jar `
+          curl -L -o gradle/wrapper/gradle-wrapper.jar \
             "https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar"
-        shell: pwsh
+          chmod +x gradlew
+        shell: bash
 
       # 4. Cache Gradle pour accélérer les builds suivants
       - name: Cache Gradle
