@@ -3,4 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.android") version "1.9.22" apply false
     id("com.google.dagger.hilt.android") version "2.50" apply false
     id("org.jetbrains.kotlin.kapt") version "1.9.22" apply false
+    id("org.jetbrains.kotlin.jvm") version "1.9.22" apply false
+    id("org.jetbrains.compose") version "1.6.1" apply false
 }

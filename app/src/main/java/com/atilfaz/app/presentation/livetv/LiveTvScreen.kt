@@ -1,6 +1,7 @@
-﻿package com.atilfaz.app.presentation.livetv
+package com.atilfaz.app.presentation.livetv
 
 import androidx.compose.foundation.*
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
@@ -13,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -26,6 +28,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.atilfaz.app.ui.theme.*
 import com.atilfaz.app.utils.Constants
+import com.atilfaz.app.utils.handleDpadAction
+import com.atilfaz.app.utils.rememberIsTV
 import kotlinx.coroutines.launch
 
 @Composable
@@ -38,33 +42,35 @@ fun LiveTvScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    val isTV = rememberIsTV()
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize().background(AtilfazBackground)) {
         val isWide = maxWidth > 600.dp
 
         if (isWide) {
-            // ── TV / Tablet / Landscape : two-pane layout ─────────────────
+            // ── TV / Tablette / Paysage : deux panneaux ──────────────────
             Row(modifier = Modifier.fillMaxSize()) {
-                // Left: category sidebar
                 CategorySidebar(
                     categories = state.categories.map { it.categoryId to it.categoryName },
                     selected = state.selectedCategoryId,
                     onSelect = viewModel::selectCategory,
-                    modifier = Modifier.width(200.dp).fillMaxHeight()
+                    isTV = isTV,
+                    modifier = Modifier.width(if (isTV) 240.dp else 200.dp).fillMaxHeight()
                 )
-                // Divider
                 Box(modifier = Modifier.width(1.dp).fillMaxHeight().background(AtilfazBorder))
-                // Right: channel list
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    SearchBar(
-                        query = state.searchQuery,
-                        onQuery = viewModel::onSearchQueryChange,
-                        placeholder = "Search channels...",
-                        modifier = Modifier.padding(12.dp)
-                    )
+                    if (!isTV) {
+                        SearchBar(
+                            query = state.searchQuery,
+                            onQuery = viewModel::onSearchQueryChange,
+                            placeholder = "Rechercher une chaîne...",
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
                     ChannelList(
                         streams = state.filteredStreams,
                         isLoading = state.isLoading,
+                        isTV = isTV,
                         onPlay = { stream ->
                             scope.launch {
                                 val url = viewModel.buildStreamUrl(stream.streamId)
@@ -76,24 +82,25 @@ fun LiveTvScreen(
                 }
             }
         } else {
-            // ── Phone / Portrait : stacked layout ─────────────────────────
+            // ── Téléphone / Portrait : layout empilé ────────────────────
             Column(modifier = Modifier.fillMaxSize()) {
-                // Header
                 Row(
-                    modifier = Modifier.fillMaxWidth().background(Color(0xFF0A0A0A)).padding(horizontal = 16.dp, vertical = 10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF0A0A0A))
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Default.Tv, null, tint = AtilfazBlueLight, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.Tv, null, tint = AtilfazBlueLight, modifier = Modifier.size(22.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("LIVE TV", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+                    Text("LIVE TV", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = Color.White)
                 }
                 SearchBar(
                     query = state.searchQuery,
                     onQuery = viewModel::onSearchQueryChange,
-                    placeholder = "Search channels...",
+                    placeholder = "Rechercher une chaîne...",
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                 )
-                // Category chips
                 if (state.categories.isNotEmpty()) {
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 12.dp),
@@ -101,7 +108,7 @@ fun LiveTvScreen(
                         modifier = Modifier.padding(bottom = 8.dp)
                     ) {
                         item {
-                            CategoryChip("All", state.selectedCategoryId == "all") { viewModel.selectCategory("all") }
+                            CategoryChip("Tout", state.selectedCategoryId == "all") { viewModel.selectCategory("all") }
                         }
                         items(state.categories) { cat ->
                             CategoryChip(cat.categoryName, state.selectedCategoryId == cat.categoryId) {
@@ -113,6 +120,7 @@ fun LiveTvScreen(
                 ChannelList(
                     streams = state.filteredStreams,
                     isLoading = state.isLoading,
+                    isTV = false,
                     onPlay = { stream ->
                         scope.launch {
                             val url = viewModel.buildStreamUrl(stream.streamId)
@@ -131,6 +139,7 @@ private fun CategorySidebar(
     categories: List<Pair<String, String>>,
     selected: String,
     onSelect: (String) -> Unit,
+    isTV: Boolean,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -139,45 +148,62 @@ private fun CategorySidebar(
     ) {
         item {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.Tv, null, tint = AtilfazBlueLight, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.Tv, null, tint = AtilfazBlueLight, modifier = Modifier.size(if (isTV) 22.dp else 18.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("LIVE TV", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White)
+                Text(
+                    "LIVE TV",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = if (isTV) 16.sp else 13.sp,
+                    color = Color.White
+                )
             }
             HorizontalDivider(color = AtilfazBorder)
         }
         item {
-            SidebarItem("All", selected == "all") { onSelect("all") }
+            SidebarItem("Tout", selected == "all", isTV) { onSelect("all") }
         }
         items(categories) { (id, name) ->
-            SidebarItem(name, selected == id) { onSelect(id) }
+            SidebarItem(name, selected == id, isTV) { onSelect(id) }
         }
     }
 }
 
 @Composable
-private fun SidebarItem(label: String, selected: Boolean, onClick: () -> Unit) {
-    val bg = if (selected) AtilfazBlue.copy(alpha = 0.25f) else Color.Transparent
-    val textColor = if (selected) AtilfazBlueLight else AtilfazTextSecond
+private fun SidebarItem(label: String, selected: Boolean, isTV: Boolean, onClick: () -> Unit) {
+    var isFocused by remember { mutableStateOf(false) }
+    val highlight = selected || isFocused
+    val bg = when {
+        selected -> AtilfazBlue.copy(alpha = 0.25f)
+        isFocused -> AtilfazBlue.copy(alpha = 0.12f)
+        else -> Color.Transparent
+    }
+    val textColor = if (highlight) AtilfazBlueLight else AtilfazTextSecond
+    val borderColor = if (isFocused && !selected) AtilfazBlueLight else Color.Transparent
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(bg)
+            .border(1.dp, borderColor)
+            .focusable()
+            .onFocusChanged { isFocused = it.isFocused }
+            .handleDpadAction(onClick)
             .clickable { onClick() }
-            .padding(horizontal = 14.dp, vertical = 11.dp),
+            .padding(horizontal = 14.dp, vertical = if (isTV) 16.dp else 11.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         if (selected) {
-            Box(modifier = Modifier.width(3.dp).height(16.dp).clip(RoundedCornerShape(2.dp)).background(AtilfazBlueLight))
+            Box(modifier = Modifier.width(3.dp).height(if (isTV) 20.dp else 16.dp).clip(RoundedCornerShape(2.dp)).background(AtilfazBlueLight))
         } else {
             Spacer(Modifier.width(3.dp))
         }
         Text(
             text = label,
-            fontSize = 13.sp,
+            fontSize = if (isTV) 16.sp else 13.sp,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             color = textColor,
             maxLines = 1,
@@ -195,7 +221,7 @@ private fun CategoryChip(label: String, selected: Boolean, onClick: () -> Unit) 
             .clip(RoundedCornerShape(20.dp))
             .background(bg)
             .clickable { onClick() }
-            .padding(horizontal = 14.dp, vertical = 7.dp)
+            .padding(horizontal = 16.dp, vertical = 9.dp)
     ) {
         Text(label, fontSize = 13.sp, color = textColor, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal)
     }
@@ -235,26 +261,27 @@ private fun SearchBar(query: String, onQuery: (String) -> Unit, placeholder: Str
 private fun ChannelList(
     streams: List<com.atilfaz.app.data.models.LiveStream>,
     isLoading: Boolean,
+    isTV: Boolean,
     onPlay: (com.atilfaz.app.data.models.LiveStream) -> Unit,
     onEpg: (Int) -> Unit
 ) {
     if (isLoading) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = AtilfazBlueLight, modifier = Modifier.size(40.dp))
+            CircularProgressIndicator(color = AtilfazBlueLight, modifier = Modifier.size(if (isTV) 56.dp else 40.dp))
         }
         return
     }
     if (streams.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Default.SearchOff, null, tint = AtilfazTextHint, modifier = Modifier.size(48.dp))
+                Icon(Icons.Default.SearchOff, null, tint = AtilfazTextHint, modifier = Modifier.size(if (isTV) 64.dp else 48.dp))
                 Spacer(Modifier.height(12.dp))
-                Text("No channels found", color = AtilfazTextHint, fontSize = 15.sp)
+                Text("Aucune chaîne trouvée", color = AtilfazTextHint, fontSize = if (isTV) 18.sp else 15.sp)
             }
         }
         return
     }
-    LazyColumn(contentPadding = PaddingValues(bottom = 92.dp)) {
+    LazyColumn(contentPadding = PaddingValues(bottom = if (isTV) 16.dp else 92.dp)) {
         itemsIndexed(streams) { index, stream ->
             ChannelItem(
                 index = index + 1,
@@ -262,6 +289,7 @@ private fun ChannelList(
                 iconUrl = stream.streamIcon,
                 hasEpg = !stream.epgChannelId.isNullOrEmpty(),
                 hasArchive = stream.tvArchive == 1,
+                isTV = isTV,
                 onClick = { onPlay(stream) },
                 onEpgClick = { onEpg(stream.streamId) }
             )
@@ -282,30 +310,42 @@ private fun ChannelItem(
     iconUrl: String,
     hasEpg: Boolean,
     hasArchive: Boolean,
+    isTV: Boolean,
     onClick: () -> Unit,
     onEpgClick: () -> Unit
 ) {
+    var isFocused by remember { mutableStateOf(false) }
+    val bgColor = if (isFocused) AtilfazBlue.copy(alpha = 0.15f) else Color.Transparent
+    val borderColor = if (isFocused) AtilfazBlueLight else Color.Transparent
+    val logoSize = if (isTV) 60.dp else 48.dp
+    val verticalPad = if (isTV) 14.dp else 10.dp
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(bgColor)
+            .border(1.dp, borderColor, RoundedCornerShape(4.dp))
+            .focusable()
+            .onFocusChanged { isFocused = it.isFocused }
+            .handleDpadAction(onClick)
             .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 12.dp, vertical = verticalPad),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Channel number
+        // Numéro
         Text(
             text = index.toString(),
-            fontSize = 12.sp,
+            fontSize = if (isTV) 14.sp else 12.sp,
             color = AtilfazTextHint,
-            modifier = Modifier.width(28.dp),
+            modifier = Modifier.width(if (isTV) 36.dp else 28.dp),
             fontWeight = FontWeight.Medium
         )
         // Logo
         Box(
             modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(8.dp))
+                .size(logoSize)
+                .clip(RoundedCornerShape(if (isTV) 10.dp else 8.dp))
                 .background(AtilfazCard),
             contentAlignment = Alignment.Center
         ) {
@@ -317,14 +357,14 @@ private fun ChannelItem(
                     contentScale = ContentScale.Fit
                 )
             } else {
-                Icon(Icons.Default.Tv, null, tint = AtilfazTextHint, modifier = Modifier.size(24.dp))
+                Icon(Icons.Default.Tv, null, tint = AtilfazTextHint, modifier = Modifier.size(if (isTV) 32.dp else 24.dp))
             }
         }
-        // Name + badges
+        // Nom + badges
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = name,
-                fontSize = 14.sp,
+                fontSize = if (isTV) 17.sp else 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color.White,
                 maxLines = 1,
@@ -335,13 +375,18 @@ private fun ChannelItem(
                 if (hasArchive) Badge(text = "REPLAY", color = AtilfazBlue)
             }
         }
-        // EPG button
+        // EPG
         if (hasEpg) {
-            IconButton(onClick = onEpgClick, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Default.Info, null, tint = AtilfazTextHint, modifier = Modifier.size(18.dp))
+            IconButton(onClick = onEpgClick, modifier = Modifier.size(if (isTV) 44.dp else 32.dp)) {
+                Icon(Icons.Default.Info, null, tint = AtilfazTextHint, modifier = Modifier.size(if (isTV) 24.dp else 18.dp))
             }
         }
-        Icon(Icons.Default.PlayCircleOutline, null, tint = AtilfazBlueLight, modifier = Modifier.size(28.dp))
+        Icon(
+            Icons.Default.PlayCircleOutline,
+            null,
+            tint = if (isFocused) AtilfazBlueLight else AtilfazBlueLight.copy(alpha = 0.7f),
+            modifier = Modifier.size(if (isTV) 36.dp else 28.dp)
+        )
     }
 }
 

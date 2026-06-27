@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "StreamVault"
 include(":app")
+include(":desktopApp")
