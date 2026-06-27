@@ -15,6 +15,7 @@ import com.atilfaz.desktop.api.XtreamCredentials
 import com.atilfaz.desktop.ui.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.awt.Desktop
 import java.io.File
 import java.net.URI
@@ -63,7 +64,7 @@ fun App() {
                         isLoading = true
                         loginError = null
                         val newApi = XtreamApi(credentials)
-                        val ok = kotlinx.coroutines.withContext(Dispatchers.IO) { newApi.authenticate() }
+                        val ok = withContext(Dispatchers.IO) { newApi.authenticate() }
                         if (ok) {
                             // Sauvegarder les identifiants
                             prefs.put("server_url", credentials.serverUrl)

@@ -3,6 +3,7 @@ package com.atilfaz.desktop.ui
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -12,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -71,15 +71,13 @@ fun MainScreen(
             Spacer(Modifier.height(8.dp))
         }
 
-        // ── Séparateur ─────────────────────────────────────────────────────
         Box(Modifier.width(1.dp).fillMaxHeight().background(BorderColor))
 
-        // ── Contenu ────────────────────────────────────────────────────────
         Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
             when (currentTab) {
-                DesktopTab.LIVE    -> LiveTab(api, onPlay)
-                DesktopTab.MOVIES  -> MoviesTab(api, onPlay)
-                DesktopTab.SERIES  -> SeriesTab(api)
+                DesktopTab.LIVE     -> LiveTab(api, onPlay)
+                DesktopTab.MOVIES   -> MoviesTab(api, onPlay)
+                DesktopTab.SERIES   -> SeriesTab(api)
                 DesktopTab.SETTINGS -> SettingsTab(onLogout)
             }
         }
@@ -113,12 +111,8 @@ fun LiveTab(api: XtreamApi, onPlay: (String, String) -> Unit) {
             modifier = Modifier.width(220.dp).fillMaxHeight().background(Color(0xFF080808)),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
-            item {
-                SidebarHeader("LIVE TV", Icons.Default.Tv)
-            }
-            item {
-                SidebarCatItem("Tout", selectedCat == null) { selectedCat = null }
-            }
+            item { SidebarHeader("LIVE TV", Icons.Default.Tv) }
+            item { SidebarCatItem("Tout", selectedCat == null) { selectedCat = null } }
             items(categories) { cat ->
                 SidebarCatItem(cat.categoryName, selectedCat == cat.categoryId) {
                     selectedCat = cat.categoryId
@@ -128,12 +122,15 @@ fun LiveTab(api: XtreamApi, onPlay: (String, String) -> Unit) {
 
         Box(Modifier.width(1.dp).fillMaxHeight().background(BorderColor))
 
-        // Liste chaînes
         Column(Modifier.weight(1f).fillMaxHeight()) {
             SearchField(search, { search = it }, "Rechercher une chaîne...")
             if (isLoading) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = BlueLight)
+                }
+            } else if (filtered.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Aucune chaîne trouvée", color = TextHint, fontSize = 15.sp)
                 }
             } else {
                 LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 16.dp)) {
@@ -142,12 +139,11 @@ fun LiveTab(api: XtreamApi, onPlay: (String, String) -> Unit) {
                             number = i + 1,
                             name = stream.name,
                             hasArchive = stream.tvArchive == 1,
-                            onClick = {
-                                val url = api.buildLiveUrl(stream.streamId)
-                                onPlay(url, stream.name)
-                            }
+                            onClick = { onPlay(api.buildLiveUrl(stream.streamId), stream.name) }
                         )
-                        if (i < filtered.lastIndex) HorizontalDivider(color = Color(0xFF1F1F1F))
+                        if (i < filtered.lastIndex) {
+                            HorizontalDivider(color = Color(0xFF1F1F1F))
+                        }
                     }
                 }
             }
@@ -194,7 +190,8 @@ fun MoviesTab(api: XtreamApi, onPlay: (String, String) -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(filtered) { vod ->
+                items(count = filtered.size) { index ->
+                    val vod = filtered[index]
                     VodCard(vod) {
                         val url = api.buildVodUrl(vod.streamId, vod.containerExtension.ifEmpty { "mkv" })
                         onPlay(url, vod.name)
@@ -242,8 +239,8 @@ fun SeriesTab(api: XtreamApi) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(filtered) { s ->
-                    SeriesCard(s)
+                items(count = filtered.size) { index ->
+                    SeriesCard(filtered[index])
                 }
             }
         }
@@ -268,9 +265,11 @@ fun SettingsTab(onLogout: () -> Unit) {
                 Spacer(Modifier.width(8.dp))
                 Text("Se déconnecter / Changer de compte")
             }
+            Spacer(Modifier.height(8.dp))
             Text(
-                "Le lecteur vidéo par défaut (VLC recommandé) sera\nutilisé pour lire les flux.",
-                fontSize = 13.sp, color = TextSecondary,
+                "Le lecteur vidéo par défaut (VLC recommandé)\nsera utilisé pour lire les flux.",
+                fontSize = 13.sp,
+                color = TextSecondary,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
@@ -303,10 +302,18 @@ private fun SidebarCatItem(label: String, selected: Boolean, onClick: () -> Unit
     ) {
         if (selected) {
             Box(Modifier.width(3.dp).height(16.dp).clip(RoundedCornerShape(2.dp)).background(BlueLight))
-        } else Spacer(Modifier.width(3.dp))
+        } else {
+            Spacer(Modifier.width(3.dp))
+        }
         Spacer(Modifier.width(8.dp))
-        Text(label, fontSize = 13.sp, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal)
+        Text(
+            label,
+            fontSize = 13.sp,
+            color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+        )
     }
 }
 
@@ -319,8 +326,10 @@ private fun SearchField(query: String, onQuery: (String) -> Unit, placeholder: S
         placeholder = { Text(placeholder, color = TextHint) },
         leadingIcon = { Icon(Icons.Default.Search, null, tint = TextHint) },
         trailingIcon = {
-            if (query.isNotEmpty()) IconButton({ onQuery("") }) {
-                Icon(Icons.Default.Clear, null, tint = TextHint)
+            if (query.isNotEmpty()) {
+                IconButton({ onQuery("") }) {
+                    Icon(Icons.Default.Clear, null, tint = TextHint)
+                }
             }
         },
         singleLine = true,
@@ -347,8 +356,10 @@ private fun DesktopChannelRow(number: Int, name: String, hasArchive: Boolean, on
     ) {
         Text("$number", fontSize = 12.sp, color = TextHint, modifier = Modifier.width(32.dp))
         Column(Modifier.weight(1f)) {
-            Text(name, fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium,
-                maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                name, fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium,
+                maxLines = 1, overflow = TextOverflow.Ellipsis
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 SmallBadge("LIVE", LiveRed)
                 if (hasArchive) SmallBadge("REPLAY", BlueMain)
@@ -367,13 +378,16 @@ private fun VodCard(vod: VodStream, onClick: () -> Unit) {
         colors = CardDefaults.cardColors(containerColor = CardColor)
     ) {
         Column {
-            Box(Modifier.fillMaxWidth().height(180.dp).background(Color(0xFF1A1A1A)), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(180.dp).background(Color(0xFF1A1A1A)),
+                contentAlignment = Alignment.Center
+            ) {
                 Icon(Icons.Default.Movie, null, tint = TextHint, modifier = Modifier.size(48.dp))
             }
             Column(Modifier.padding(10.dp)) {
                 Text(vod.name, fontSize = 12.sp, color = Color.White, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 if (vod.rating > 0) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                         Icon(Icons.Default.Star, null, tint = GoldColor, modifier = Modifier.size(11.dp))
                         Text(String.format("%.1f", vod.rating), fontSize = 11.sp, color = TextSecondary)
                     }
@@ -391,11 +405,16 @@ private fun SeriesCard(series: SeriesStream) {
         colors = CardDefaults.cardColors(containerColor = CardColor)
     ) {
         Column {
-            Box(Modifier.fillMaxWidth().height(180.dp).background(Color(0xFF1A1A1A)), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(180.dp).background(Color(0xFF1A1A1A)),
+                contentAlignment = Alignment.Center
+            ) {
                 Icon(Icons.Default.VideoLibrary, null, tint = TextHint, modifier = Modifier.size(48.dp))
             }
-            Text(series.name, fontSize = 12.sp, color = Color.White, maxLines = 2,
-                overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(10.dp))
+            Text(
+                series.name, fontSize = 12.sp, color = Color.White, maxLines = 2,
+                overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(10.dp)
+            )
         }
     }
 }
@@ -403,13 +422,11 @@ private fun SeriesCard(series: SeriesStream) {
 @Composable
 private fun SmallBadge(text: String, color: Color) {
     Box(
-        modifier = Modifier.clip(RoundedCornerShape(3.dp)).background(color.copy(0.18f)).padding(horizontal = 5.dp, vertical = 2.dp)
+        modifier = Modifier
+            .clip(RoundedCornerShape(3.dp))
+            .background(color.copy(0.18f))
+            .padding(horizontal = 5.dp, vertical = 2.dp)
     ) {
         Text(text, fontSize = 9.sp, color = color, fontWeight = FontWeight.Bold)
     }
-}
-
-// Alias pour LazyVerticalGrid.items
-private fun <T> LazyGridScope.items(list: List<T>, key: ((T) -> Any)? = null, content: @Composable LazyGridItemScope.(T) -> Unit) {
-    items(count = list.size, key = key?.let { k -> { k(list[it]) } }) { content(list[it]) }
 }
