@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -217,7 +218,7 @@ private fun TvRailItem(
                 indication = null,
                 onClick = onClick
             )
-            .onFocusChangedTv { isFocused = it }
+            .onFocusChanged { isFocused = it.isFocused }
             .padding(vertical = 14.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -377,8 +378,3 @@ private fun PhoneNavItem(
     }
 }
 
-// Helper extension pour détecter le focus TV
-fun Modifier.onFocusChangedTv(onFocused: (Boolean) -> Unit): Modifier =
-    this.then(
-        androidx.compose.ui.focus.onFocusChanged { onFocused(it.isFocused) }
-    )
