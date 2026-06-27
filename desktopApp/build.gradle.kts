@@ -8,12 +8,6 @@ plugins {
 group = "com.atilfaz"
 version = "1.0.0"
 
-repositories {
-    mavenCentral()
-    google()
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-}
-
 dependencies {
     implementation(compose.desktop.currentOs)
     implementation(compose.material3)
