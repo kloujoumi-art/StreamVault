@@ -35,7 +35,15 @@ jobs:
           java-version: "17"
           distribution: "temurin"
 
-      # 3. Cache Gradle pour accélérer les builds suivants
+      # 3. Télécharger gradle-wrapper.jar (non versionné dans le repo)
+      - name: Download Gradle Wrapper JAR
+        run: |
+          mkdir -p gradle/wrapper
+          curl -L -o gradle/wrapper/gradle-wrapper.jar `
+            "https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar"
+        shell: pwsh
+
+      # 4. Cache Gradle pour accélérer les builds suivants
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -45,10 +53,12 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts') }}
           restore-keys: gradle-${{ runner.os }}-
 
-      # 4. Compiler l'application PC (app autonome avec JRE intégré)
+      # 5. Compiler l'application PC (app autonome avec JRE intégré)
       - name: Build PC App (createDistributable)
         run: ./gradlew :desktopApp:createDistributable --no-daemon
         shell: bash
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2g"
 
       # 5. Zipper le dossier pour distribution
       - name: Zip distributable
@@ -61,6 +71,8 @@ jobs:
       - name: Build JAR portable
         run: ./gradlew :desktopApp:packageUberJarForCurrentOS --no-daemon
         shell: bash
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2g"
 
       # 7. Trouver le JAR généré
       - name: Find JAR
