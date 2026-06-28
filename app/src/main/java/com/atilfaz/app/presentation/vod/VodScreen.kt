@@ -1,6 +1,7 @@
 ﻿package com.atilfaz.app.presentation.vod
 
 import androidx.compose.foundation.*
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -13,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -20,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.atilfaz.app.utils.handleDpadAction
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
@@ -168,26 +171,45 @@ fun VodScreen(
 
 @Composable
 fun ContentCategoryChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    val bg = if (selected) AtilfazBlue else AtilfazCard
-    val textColor = if (selected) Color.White else AtilfazTextSecond
+    var isFocused by remember { mutableStateOf(false) }
+    val bg = when {
+        selected  -> AtilfazBlue
+        isFocused -> AtilfazBlue.copy(alpha = 0.45f)
+        else      -> AtilfazCard
+    }
+    val textColor = if (selected || isFocused) Color.White else AtilfazTextSecond
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
             .background(bg)
+            .border(
+                width = if (isFocused) 2.dp else 0.dp,
+                color = if (isFocused) AtilfazBlueLight else Color.Transparent,
+                shape = RoundedCornerShape(20.dp)
+            )
+            .focusable()
+            .onFocusChanged { isFocused = it.isFocused }
+            .handleDpadAction(onClick)
             .clickable { onClick() }
             .padding(horizontal = 14.dp, vertical = 7.dp)
     ) {
-        Text(label, fontSize = 13.sp, color = textColor, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
+        Text(label, fontSize = 13.sp, color = textColor, fontWeight = if (selected || isFocused) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
     }
 }
 
 @Composable
 fun MovieCard(title: String, posterUrl: String, rating: Double, onClick: () -> Unit) {
+    var isFocused by remember { mutableStateOf(false) }
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = AtilfazCard),
-        elevation = CardDefaults.cardElevation(2.dp)
+        elevation = CardDefaults.cardElevation(if (isFocused) 10.dp else 2.dp),
+        border = if (isFocused) BorderStroke(2.dp, AtilfazBlueLight) else null,
+        modifier = Modifier
+            .focusable()
+            .onFocusChanged { isFocused = it.isFocused }
+            .handleDpadAction(onClick)
     ) {
         Column {
             Box(modifier = Modifier.fillMaxWidth().aspectRatio(2f / 3f)) {

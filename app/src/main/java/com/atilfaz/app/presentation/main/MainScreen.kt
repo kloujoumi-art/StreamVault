@@ -53,6 +53,7 @@ val bottomTabs = listOf(
 @Composable
 fun MainScreen(
     onNavigateToPlayer: (String, String, String, Int) -> Unit,
+    onNavigateToSeriesDetail: (Int) -> Unit,
     onLogout: () -> Unit
 ) {
     val tabNavController = rememberNavController()
@@ -80,7 +81,7 @@ fun MainScreen(
                 BottomTab.Series.route,
                 enterTransition = { fadeIn(tween(200)) },
                 exitTransition = { fadeOut(tween(200)) }
-            ) { SeriesScreen(onNavigateToSeriesDetail = {}) }
+            ) { SeriesScreen(onNavigateToSeriesDetail = onNavigateToSeriesDetail) }
             composable(
                 BottomTab.Settings.route,
                 enterTransition = { fadeIn(tween(200)) },
@@ -133,7 +134,7 @@ fun MainScreen(
                     VodScreen(onNavigateToPlayer = onNavigateToPlayer)
                 }
                 composable(BottomTab.Series.route, enterTransition = { fadeIn(tween(200)) }, exitTransition = { fadeOut(tween(200)) }) {
-                    SeriesScreen(onNavigateToSeriesDetail = {})
+                    SeriesScreen(onNavigateToSeriesDetail = onNavigateToSeriesDetail)
                 }
                 composable(BottomTab.Settings.route, enterTransition = { fadeIn(tween(200)) }, exitTransition = { fadeOut(tween(200)) }) {
                     SettingsScreen(onLogout = onLogout)

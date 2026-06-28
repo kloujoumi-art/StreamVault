@@ -44,6 +44,9 @@ fun NavGraph(
                 onNavigateToPlayer = { url, title, type, id ->
                     navController.navigate(Screen.Player.createRoute(url, title, type, id))
                 },
+                onNavigateToSeriesDetail = { seriesId ->
+                    navController.navigate(Screen.SeriesDetail.createRoute(seriesId))
+                },
                 onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
